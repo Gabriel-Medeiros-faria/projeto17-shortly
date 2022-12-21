@@ -54,3 +54,31 @@ export async function openUrl(req, res){
         res.status(500).send(err)
     }
 }
+
+export async function deleteUrl(req, res){
+    const {id} = req.params
+    const {authorization} = req.headers
+    const token = authorization?.replace("Bearer ", "")
+
+    try{
+        const session = await connectionDB.query('SELECT * FROM session WHERE token = $1;',[token])
+        const url = await connectionDB.query('SELECT * FROM urls WHERE id=$1;', [id])
+
+        if(!session.rows[0]){
+            return res.status(401).send("Não autorizado")
+        }
+
+        if(url.rows[0].userId !== session.rows[0].userId){
+            return res.status(401).send("Link não pertence ao usuário!")
+        }
+
+        if(!url.rows[0]){
+            return res.status(401).send("Url não existente!")
+        }
+        await connectionDB.query('DELETE FROM urls WHERE id=$1;',[id])
+        res.sendStatus(204)
+    }catch(err){
+        console.log(err)
+        res.status(500).send(err)
+    }
+}
