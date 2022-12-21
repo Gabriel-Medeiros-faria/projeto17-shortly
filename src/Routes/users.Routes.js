@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { create } from "../Controllers/users.controller.js";
+import { create, FindUserInfo} from "../Controllers/users.controller.js";
 const router = Router()
 
-router.post("/users", create)
-
+router.post("/signup", create)
+router.get("/users/me", FindUserInfo)
 export default router

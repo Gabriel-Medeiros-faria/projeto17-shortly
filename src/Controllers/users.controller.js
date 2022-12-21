@@ -25,3 +25,36 @@ export async function create(req, res){
         res.status(500).send(err)
     }
 }
+
+export async function FindUserInfo(req, res){
+    const {authorization} = req.headers
+    const token = authorization?.replace("Bearer ", "")
+
+    try{
+        const session = await connectionDB.query('SELECT * FROM session WHERE token = $1;',[token])
+        const url = await connectionDB.query('SELECT * FROM urls WHERE "userId"=$1;', [session.rows[0].userId])
+        const user = await connectionDB.query('SELECT * FROM users WHERE id=$1;', [session.rows[0].userId])
+        const visitCount = await connectionDB.query('SELECT SUM(amount) FROM urls WHERE "userId"=$1;',
+        [session.rows[0].userId]);
+
+        if(!session.rows[0]){
+            return res.status(401).send("Não autorizado")
+        }
+        if(url.rows[0].userId !== session.rows[0].userId){
+            return res.sendStatus(404)
+        }
+        const obj = await connectionDB.query('SELECT urls.id AS "ulrId", urls."shortlyLink", urls.link, urls.amount AS "visitCount" FROM urls JOIN users ON urls."userId" = users.id  WHERE urls."userId" = $1;', 
+        [session.rows[0].userId])
+
+        const userUrls = {
+            id: session.rows[0].userId,
+            name: user.rows[0].name,
+            visitCount: visitCount.rows[0].sum,
+            shortenedUrls: obj.rows
+        }
+        res.send(userUrls)
+    }catch(err){
+        console.log(err)
+        res.status(500).send(err)
+    }
+}

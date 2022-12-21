@@ -43,12 +43,16 @@ export async function findById(req, res){
 export async function openUrl(req, res){
     const {shortUrl} = req.params
     try{
-        const url = await connectionDB.query('SELECT * FROM urls WHERE "shortlyLink"=$1;', [shortUrl])
-        if(!url.rows[0]){
-            return res.sendStatus(404)
-        }
+        const { rows } = await connectionDB.query(
+            'SELECT * FROM urls WHERE "shortlyLink"=$1;',
+            [shortUrl]
+        );
+        console.log(rows)
+        if (rows.length === 0) {
+            return res.status(404).send("Esse link não existe!");
+        };
         await connectionDB.query('UPDATE urls SET amount = amount + 1 WHERE "shortlyLink"=$1;', [shortUrl])
-        res.redirect(url.rows[0].link)
+        res.redirect(rows[0].link)
     }catch(err){
         console.log(err)
         res.status(500).send(err)
