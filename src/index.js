@@ -9,4 +9,6 @@ app.use(usersRoutes)
 app.use(urlsRoutes)
 app.use(sessionRoutes)
 
-app.listen(4000, ()=> console.log("Server running in port: 4000"))
+const port = process.env.PORTDB
+
+app.listen(port, ()=> console.log(`Server running in port: ${port}`))

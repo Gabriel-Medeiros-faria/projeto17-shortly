@@ -58,3 +58,15 @@ export async function FindUserInfo(req, res){
         res.status(500).send(err)
     }
 }
+
+export async function ranking(req, res){
+    try{
+        const ranking = await connectionDB.query(`SELECT users.id, users.name, COUNT(urls.link) AS "linkCount", COALESCE(SUM(urls.amount),0) AS "visitCount" FROM users
+        LEFT JOIN urls ON urls."userId" = users.id
+        GROUP BY users.id ORDER BY "visitCount" DESC, "linkCount" DESC LIMIT 10`)
+        res.send(ranking.rows)
+    }catch(err){
+        console.log(err)
+        res.status(500).send(err)
+    }
+}

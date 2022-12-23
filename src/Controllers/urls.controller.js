@@ -47,7 +47,6 @@ export async function openUrl(req, res){
             'SELECT * FROM urls WHERE "shortlyLink"=$1;',
             [shortUrl]
         );
-        console.log(rows)
         if (rows.length === 0) {
             return res.status(404).send("Esse link não existe!");
         };
